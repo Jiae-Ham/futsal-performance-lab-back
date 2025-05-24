@@ -1,10 +1,7 @@
 package com.alpaca.futsal_performance_lab_back.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,10 +11,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "game")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 public class Game {
 
     @Id
@@ -31,11 +28,12 @@ public class Game {
     @Column(name = "ended_at", nullable = false)
     private LocalDateTime endedAt;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+//    @Column(name = "password", nullable = false)
+//    private String password;
 
-    @Column(name = "is_active")
-    private Integer isActive;
+    @Setter
+    @Column(name = "active")
+    private Integer active;
 
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)

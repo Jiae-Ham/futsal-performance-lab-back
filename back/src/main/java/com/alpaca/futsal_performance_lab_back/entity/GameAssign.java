@@ -1,17 +1,14 @@
 package com.alpaca.futsal_performance_lab_back.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "game_assign")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 public class GameAssign {
 
     @Id
@@ -26,4 +23,7 @@ public class GameAssign {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private AppUser appUser;
+
+    @Column(name = "host", nullable = false)
+    private boolean host;
 }

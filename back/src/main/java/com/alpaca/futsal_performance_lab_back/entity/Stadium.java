@@ -8,7 +8,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "stadium")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

@@ -8,7 +8,6 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "set_assign")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -20,7 +19,7 @@ public class SetAssign {
     private Integer setAssignId;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime startedAt;
 
     @Column(name = "ended_at", nullable = false)
     private LocalDateTime endedAt;
