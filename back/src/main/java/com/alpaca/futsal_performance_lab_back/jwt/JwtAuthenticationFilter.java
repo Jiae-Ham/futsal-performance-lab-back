@@ -1,5 +1,6 @@
 package com.alpaca.futsal_performance_lab_back.jwt;
 
+import com.alpaca.futsal_performance_lab_back.auth.AppUserPrincipal;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.service.user.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
@@ -26,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final TokenBlacklistService tokenBlacklistService;
     private static final AntPathMatcher matcher = new AntPathMatcher();
 
-    // ✅ 공개 URL 목록 - 토큰 없이도 접근 허용
+    // 공개 URL 목록 - 토큰 없이 접근 허용
     private static final List<String> PUBLIC_PATTERNS = List.of(
             "/api/auth/**"
     );
@@ -62,9 +63,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
-                AppUser user = (AppUser) auth.getPrincipal();
-                log.info("인증된 사용자: {}", user.getUserId()); // ✅ 특정 필드만 출력
+
                 if (auth != null) {
+                    Object principal = auth.getPrincipal();
+
+                    if (principal instanceof AppUserPrincipal appUserPrincipal) {
+                        AppUser user = appUserPrincipal.getAppUser();
+                        log.info("[JwtAuthFilter] 인증된 사용자: {}", user.getUserId());
+                    } else {
+                        log.warn("[JwtAuthFilter] principal이 AppUserPrincipal이 아님: {}", principal.getClass());
+                    }
+
                     SecurityContextHolder.getContext().setAuthentication(auth);
                     log.info("[JwtAuthFilter] 인증 객체 설정 완료: {}", auth.getName());
                 } else {
@@ -78,12 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setContentType("application/json;charset=utf-8");
                 response.getWriter().write("{\"error\" : \"Jwt 토큰이 없거나 유효하지 않습니다.\"}");
             }
-        } catch (StackOverflowError e) {
-            log.error("[JwtAuthFilter] StackOverflowError 발생!", e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"StackOverflowError: 재귀 오류가 발생했습니다.\"}");
-        } catch (Throwable t) { // ❗ Throwable로 바꿔야 Error 계열도 잡힘
+        } catch (Throwable t) {
             log.error("[JwtAuthFilter] 알 수 없는 오류 발생: {}", t.getMessage(), t);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("application/json;charset=UTF-8");
