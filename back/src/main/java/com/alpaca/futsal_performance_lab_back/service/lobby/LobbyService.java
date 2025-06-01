@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.service;
+package com.alpaca.futsal_performance_lab_back.service.lobby;
 
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyStatusResponse;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;

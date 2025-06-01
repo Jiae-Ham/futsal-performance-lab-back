@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.service;
+package com.alpaca.futsal_performance_lab_back.service.user;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

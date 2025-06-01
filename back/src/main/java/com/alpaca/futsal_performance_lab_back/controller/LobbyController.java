@@ -3,7 +3,7 @@ package com.alpaca.futsal_performance_lab_back.controller;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.GameJoinResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyIsReadyResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyStatusResponse;
-import com.alpaca.futsal_performance_lab_back.service.LobbyService;
+import com.alpaca.futsal_performance_lab_back.service.lobby.LobbyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

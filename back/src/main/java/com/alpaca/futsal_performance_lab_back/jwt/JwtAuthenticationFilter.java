@@ -1,8 +1,7 @@
 package com.alpaca.futsal_performance_lab_back.jwt;
 
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
-import com.alpaca.futsal_performance_lab_back.service.TokenBlacklistService;
-import com.alpaca.futsal_performance_lab_back.service.TokenBlacklistService;
+import com.alpaca.futsal_performance_lab_back.service.user.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

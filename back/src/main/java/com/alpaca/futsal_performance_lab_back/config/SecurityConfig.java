@@ -3,7 +3,7 @@ package com.alpaca.futsal_performance_lab_back.config;
 import com.alpaca.futsal_performance_lab_back.jwt.JwtAuthenticationFilter;
 import com.alpaca.futsal_performance_lab_back.jwt.JwtExceptionFilter;
 import com.alpaca.futsal_performance_lab_back.jwt.JwtTokenProvider;
-import com.alpaca.futsal_performance_lab_back.service.TokenBlacklistService;
+import com.alpaca.futsal_performance_lab_back.service.user.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,14 +34,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable())
-                .logout(logout -> logout.disable());
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable);
 
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class);

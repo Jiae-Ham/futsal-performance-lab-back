@@ -1,6 +1,6 @@
-package com.alpaca.futsal_performance_lab_back.service;
+package com.alpaca.futsal_performance_lab_back.service.user;
 
-import com.alpaca.futsal_performance_lab_back.dto.AppUserSignUpRequestDTO;
+import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.jwt.JwtToken;
 import com.alpaca.futsal_performance_lab_back.jwt.JwtTokenProvider;

@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.dto;
+package com.alpaca.futsal_performance_lab_back.dto.request.user;
 
 import lombok.Data;
 

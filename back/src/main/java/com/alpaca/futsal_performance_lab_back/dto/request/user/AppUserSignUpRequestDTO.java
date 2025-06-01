@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.dto;
+package com.alpaca.futsal_performance_lab_back.dto.request.user;
 
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import lombok.*;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppUserDTO {
+public class AppUserSignUpRequestDTO {
     private String userId;
     private String password;
     private String name;
@@ -23,10 +23,26 @@ public class AppUserDTO {
     private BigDecimal height;
     private LocalDate birthDate;
     private String profileImageUrl;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
 
-    public static AppUserDTO fromEntity(AppUser user) {
-        return AppUserDTO.builder()
+    public static AppUser fromDTO(AppUserSignUpRequestDTO dto) {
+        return AppUser.builder()
+                .userId(dto.getUserId())
+                .password(dto.getPassword())
+                .name(dto.getName())
+                .nickname(dto.getNickname())
+                .phoneNumber(dto.getPhoneNumber())
+                .mainPosition(dto.getMainPosition())
+                .dominantFoot(dto.getDominantFoot())
+                .weight(dto.getWeight())
+                .height(dto.getHeight())
+                .birthDate(dto.getBirthDate())
+                .profileImageUrl(dto.getProfileImageUrl())
+                .createdAt(dto.getCreatedAt())
+                .build();
+    }
+    public static AppUserSignUpRequestDTO fromEntity(AppUser user) {
+        return AppUserSignUpRequestDTO.builder()
                 .userId(user.getUserId())
                 .name(user.getName())
                 .nickname(user.getNickname())
@@ -37,23 +53,8 @@ public class AppUserDTO {
                 .height(user.getHeight())
                 .birthDate(user.getBirthDate())
                 .profileImageUrl(user.getProfileImageUrl())
-                .updatedAt(user.getUpdatedAt())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 
-    public static AppUser fromDTO(AppUserDTO dto) {
-        return AppUser.builder()
-                .userId(dto.getUserId())
-                .name(dto.getName())
-                .nickname(dto.getNickname())
-                .phoneNumber(dto.getPhoneNumber())
-                .mainPosition(dto.getMainPosition())
-                .dominantFoot(dto.getDominantFoot())
-                .weight(dto.getWeight())
-                .height(dto.getHeight())
-                .birthDate(dto.getBirthDate())
-                .profileImageUrl(dto.getProfileImageUrl())
-                .updatedAt(dto.getUpdatedAt())
-                .build();
-    }
 }

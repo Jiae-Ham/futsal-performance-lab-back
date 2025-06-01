@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.service;
+package com.alpaca.futsal_performance_lab_back.service.user;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import org.springframework.security.core.userdetails.User;
