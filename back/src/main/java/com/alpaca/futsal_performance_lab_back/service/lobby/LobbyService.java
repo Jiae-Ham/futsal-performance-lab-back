@@ -1,5 +1,6 @@
 package com.alpaca.futsal_performance_lab_back.service.lobby;
 
+import com.alpaca.futsal_performance_lab_back.dto.response.lobby.GameJoinResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyStatusResponse;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.entity.Game;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +29,13 @@ public class LobbyService {
     private final StadiumRepository stadiumRepository;
 
     // 참여 가능한 게임이 없으면 새로 생성하고, 있으면 해당 게임에 참여시킴
-    public int createGameForUser(String userId, int stadiumId) {
+    public GameJoinResponse createGameForUser(String userId, int stadiumId) {
+        AtomicBoolean isNewGame = new AtomicBoolean(false);
+        boolean isNewJoin = false;
+
         Game activeGame = gameRepository.findFirstByActiveAndStadium_StadiumId(1, stadiumId)
                 .orElseGet(() -> {
+                    isNewGame.set(true);
                     Stadium stadium = stadiumRepository.findById(stadiumId)
                             .orElseThrow(GameNotFoundException::new);
 
@@ -54,7 +60,10 @@ public class LobbyService {
                     return savedGame;
                 });
 
-        if (gameAssignRepository.existsByGame_GameIdAndAppUser_UserId(activeGame.getGameId(), userId)) {
+        // 새로 참여한 경우만 추가 (방장이 아니라면)
+        if (!gameAssignRepository.existsByGame_GameIdAndAppUser_UserId(activeGame.getGameId(), userId)) {
+            isNewJoin = true;
+
             AppUser user = appUserRepository.findById(userId)
                     .orElseThrow(() -> UserNotFoundException.of(userId));
 
@@ -67,8 +76,9 @@ public class LobbyService {
             gameAssignRepository.save(assign);
         }
 
-        return activeGame.getGameId();
+        return new GameJoinResponse(activeGame.getGameId(), isNewGame, isNewJoin);
     }
+
 
     // 유저의 참여 여부를 확인하고 게임의 대기 상태 정보를 제공
     public LobbyStatusResponse getLobbyStatus(int gameId, String userId) {

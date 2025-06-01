@@ -19,11 +19,9 @@ public class LobbyController {
      * 참가 신청: 프론트에서 userId를 보내면 새 gameId를 생성 후 DTO로 반환
      */
     @PostMapping("/nearest/{userId}")
-    public ResponseEntity<GameJoinResponse> joinNearestLobby(@PathVariable String userId) {
-        int stadiumId = 1; // BLE 비콘 기반으로 받아온 값이라 가정
-
-        int gameId = lobbyService.createGameForUser(userId, stadiumId);
-        return ResponseEntity.ok(new GameJoinResponse(gameId));
+    public GameJoinResponse joinNearestLobby(@PathVariable String userId) {
+        int stadiumId = 1; // BLE 비콘 기반 추후 교체
+        return lobbyService.createGameForUser(userId, stadiumId);
     }
 
     /**
