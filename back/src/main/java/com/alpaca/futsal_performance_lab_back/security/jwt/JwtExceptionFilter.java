@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.jwt;
+package com.alpaca.futsal_performance_lab_back.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

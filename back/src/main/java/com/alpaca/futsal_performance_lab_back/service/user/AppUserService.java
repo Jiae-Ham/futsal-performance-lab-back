@@ -1,7 +1,7 @@
 package com.alpaca.futsal_performance_lab_back.service.user;
 
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtToken;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtToken;
 import org.springframework.stereotype.Service;
 
 @Service

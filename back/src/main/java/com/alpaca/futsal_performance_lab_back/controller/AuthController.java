@@ -2,7 +2,7 @@ package com.alpaca.futsal_performance_lab_back.controller;
 
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserLoginRequestDTO;
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtToken;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtToken;
 import com.alpaca.futsal_performance_lab_back.service.user.AppUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

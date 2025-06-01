@@ -1,8 +1,8 @@
 package com.alpaca.futsal_performance_lab_back.config;
 
-import com.alpaca.futsal_performance_lab_back.jwt.JwtAuthenticationFilter;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtExceptionFilter;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtTokenProvider;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtAuthenticationFilter;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtExceptionFilter;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtTokenProvider;
 import com.alpaca.futsal_performance_lab_back.service.user.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

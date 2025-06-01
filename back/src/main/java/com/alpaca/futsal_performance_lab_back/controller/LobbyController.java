@@ -19,9 +19,10 @@ public class LobbyController {
      * 참가 신청: 프론트에서 userId를 보내면 새 gameId를 생성 후 DTO로 반환
      */
     @PostMapping("/nearest/{userId}")
-    public GameJoinResponse joinNearestLobby(@PathVariable String userId) {
+    public ResponseEntity<GameJoinResponse> joinNearestLobby(@PathVariable String userId) {
         int stadiumId = 1; // BLE 비콘 기반 추후 교체
-        return lobbyService.createGameForUser(userId, stadiumId);
+        GameJoinResponse response = lobbyService.createGameForUser(userId, stadiumId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -32,8 +33,8 @@ public class LobbyController {
             @PathVariable int gameId,
             @PathVariable String userId
     ) {
-        LobbyStatusResponse status = lobbyService.getLobbyStatus(gameId, userId);
-        return ResponseEntity.ok(status);
+        LobbyStatusResponse response = lobbyService.getLobbyStatus(gameId, userId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -45,10 +46,6 @@ public class LobbyController {
             @PathVariable String userId
     ) {
         lobbyService.markReady(gameId, userId);
-        LobbyIsReadyResponse response = new LobbyIsReadyResponse(true);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new LobbyIsReadyResponse(true));
     }
 }
-
-
-

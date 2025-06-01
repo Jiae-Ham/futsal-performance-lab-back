@@ -1,6 +1,6 @@
-package com.alpaca.futsal_performance_lab_back.jwt;
+package com.alpaca.futsal_performance_lab_back.security.jwt;
 
-import com.alpaca.futsal_performance_lab_back.auth.AppUserPrincipal;
+import com.alpaca.futsal_performance_lab_back.security.principal.AppUserPrincipal;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.service.user.TokenBlacklistService;
 import jakarta.servlet.FilterChain;

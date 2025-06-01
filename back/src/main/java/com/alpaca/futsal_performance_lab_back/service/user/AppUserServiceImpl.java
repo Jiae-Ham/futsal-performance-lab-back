@@ -2,8 +2,8 @@ package com.alpaca.futsal_performance_lab_back.service.user;
 
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtToken;
-import com.alpaca.futsal_performance_lab_back.jwt.JwtTokenProvider;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtToken;
+import com.alpaca.futsal_performance_lab_back.security.jwt.JwtTokenProvider;
 import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

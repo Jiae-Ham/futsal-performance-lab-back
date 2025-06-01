@@ -1,4 +1,4 @@
-package com.alpaca.futsal_performance_lab_back.auth;
+package com.alpaca.futsal_performance_lab_back.security.principal;
 
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import lombok.Getter;

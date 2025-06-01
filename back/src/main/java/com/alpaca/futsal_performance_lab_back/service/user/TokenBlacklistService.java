@@ -14,9 +14,9 @@ public class TokenBlacklistService {
     }
 
     public boolean isBlacklisted(String token) {
-        Long exprieAt = blacklist.get(token);
-        if (exprieAt == null) return false;
-        if (exprieAt < System.currentTimeMillis()) {
+        Long expireAt = blacklist.get(token);
+        if (expireAt == null) return false;
+        if (expireAt < System.currentTimeMillis()) {
             blacklist.remove(token);
             return false;
         }
