@@ -23,4 +23,27 @@ public class GameController {
     ) {
         gameService.saveTeamSetup(gameId, userId, dto);
     }
+    @PostMapping("/start/live/{gameId}/{setAssignId}/{userId}")
+    public void gameStart(
+            @PathVariable Integer gameId,
+            @PathVariable Integer setAssignId,
+            @PathVariable String userId
+    ){
+        gameService.gameStart(gameId, setAssignId, userId);
+    };
+    @PostMapping("/stop/live/{gameId}/{setAssignId}/{userId}")
+    public void gameStop(
+            @PathVariable Integer gameId,
+            @PathVariable Integer setAssignId,
+            @PathVariable String userId
+    ){
+        gameService.gameStop(gameId, setAssignId, userId);
+    }
+    @PostMapping("/end/live/{gameId}/{userId}")
+    public void gameEnd(
+            @PathVariable Integer gameId,
+            @PathVariable String userId
+    ){
+        gameService.gameEnd(gameId, userId);
+    }
 }

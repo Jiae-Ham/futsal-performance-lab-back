@@ -24,7 +24,7 @@ public class Game {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
+    @Setter
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 

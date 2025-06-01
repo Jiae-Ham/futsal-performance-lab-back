@@ -12,6 +12,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Builder
 @Getter
+
 public class SetAssign {
 
     @Id
@@ -25,7 +26,7 @@ public class SetAssign {
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
-
+    @Setter
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
