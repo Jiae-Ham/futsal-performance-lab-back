@@ -13,6 +13,7 @@ import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import com.alpaca.futsal_performance_lab_back.repository.GameAssignRepository;
 import com.alpaca.futsal_performance_lab_back.repository.GameRepository;
 import com.alpaca.futsal_performance_lab_back.repository.StadiumRepository;
+import com.alpaca.futsal_performance_lab_back.service.utils.ValidateHost;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +28,8 @@ public class LobbyService {
     private final GameAssignRepository gameAssignRepository;
     private final AppUserRepository appUserRepository;
     private final StadiumRepository stadiumRepository;
+    private final ValidateHost validateHost; // ✅ 추가된 의존성
 
-    // 참여 가능한 게임이 없으면 새로 생성하고, 있으면 해당 게임에 참여시킴
     public GameJoinResponse createGameForUser(String userId, int stadiumId) {
         AtomicBoolean isNewGame = new AtomicBoolean(false);
         boolean isNewJoin = false;
@@ -60,7 +61,6 @@ public class LobbyService {
                     return savedGame;
                 });
 
-        // 새로 참여한 경우만 추가 (방장이 아니라면)
         if (!gameAssignRepository.existsByGame_GameIdAndAppUser_UserId(activeGame.getGameId(), userId)) {
             isNewJoin = true;
 
@@ -79,8 +79,6 @@ public class LobbyService {
         return new GameJoinResponse(activeGame.getGameId(), isNewGame, isNewJoin);
     }
 
-
-    // 유저의 참여 여부를 확인하고 게임의 대기 상태 정보를 제공
     public LobbyStatusResponse getLobbyStatus(int gameId, String userId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(GameNotFoundException::new);
@@ -95,17 +93,17 @@ public class LobbyService {
         return new LobbyStatusResponse(playerCount, isActive);
     }
 
-    // 방장이 준비 완료를 눌렀을 때 게임 상태를 활성화(2)로 변경
     public void markReady(int gameId, String userId) {
+        // ✅ 방장 확인
+        validateHost.requireHostRole(gameId, userId);
+
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(GameNotFoundException::new);
-
-        if (!gameAssignRepository.existsByGame_GameIdAndAppUser_UserIdAndHostTrue(gameId, userId)) {
-            throw AccessDeniedToGameException.notHost();
-        }
 
         game.setActive(2);
         gameRepository.save(game);
     }
 }
+
+
 
