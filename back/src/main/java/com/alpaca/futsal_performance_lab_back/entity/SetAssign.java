@@ -11,6 +11,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 public class SetAssign {
 
     @Id
@@ -19,11 +20,14 @@ public class SetAssign {
     private Integer setAssignId;
 
     @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "started_at")
     private LocalDateTime startedAt;
 
-    @Column(name = "ended_at", nullable = false)
-    private LocalDateTime endedAt;
 
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
 
     @Column(name = "lineup", length = 4000)
     private String lineup;
