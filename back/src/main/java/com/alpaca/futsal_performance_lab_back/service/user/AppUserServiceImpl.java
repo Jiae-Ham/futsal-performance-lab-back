@@ -1,10 +1,11 @@
 package com.alpaca.futsal_performance_lab_back.service.user;
 
+import com.alpaca.futsal_performance_lab_back.dto.auth.AppUserDTO;
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
+import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import com.alpaca.futsal_performance_lab_back.security.jwt.JwtToken;
 import com.alpaca.futsal_performance_lab_back.security.jwt.JwtTokenProvider;
-import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,6 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class AppUserServiceImpl implements AppUserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final TokenBlacklistService tokenBlacklistService;
+    private final FileUploadService fileUploadService;
 
     public JwtToken login(String userId, String userPw) {
         try {
@@ -53,4 +58,38 @@ public class AppUserServiceImpl implements AppUserService {
 
         appUserRepository.save(user);
     }
+
+    @Override
+    public AppUserDTO getMyPage(String userId) {
+        AppUser user = appUserRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return AppUserDTO.fromEntity(user);
+    }
+
+    @Override
+    public AppUserDTO updateUserProfile(String userId, AppUserDTO dto, MultipartFile image) {
+        AppUser user = appUserRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setName(dto.getName());
+        user.setNickname(dto.getNickname());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setMainPosition(dto.getMainPosition());
+        user.setDominantFoot(dto.getDominantFoot());
+        user.setWeight(dto.getWeight());
+        user.setHeight(dto.getHeight());
+        user.setBirthDate(dto.getBirthDate());
+
+
+        if (image != null && !image.isEmpty()) {
+            String fileUrl = fileUploadService.upload(image);
+            user.setProfileImageUrl(fileUrl);
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        appUserRepository.save(user);
+        return AppUserDTO.fromEntity(user);
+    }
+
 }
+

@@ -1,7 +1,9 @@
 package com.alpaca.futsal_performance_lab_back.controller;
 
+import com.alpaca.futsal_performance_lab_back.dto.auth.AppUserDTO;
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserLoginRequestDTO;
 import com.alpaca.futsal_performance_lab_back.dto.request.user.AppUserSignUpRequestDTO;
+import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import com.alpaca.futsal_performance_lab_back.security.jwt.JwtToken;
 import com.alpaca.futsal_performance_lab_back.service.user.AppUserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AppUserService appUserService;
+    private final AppUserRepository appUserRepository;
 
     // 로그인
     @PostMapping("/login")
@@ -52,4 +59,23 @@ public class AuthController {
         log.info("[AuthController] 회원가입 완료 - userId: {}", signUpRequest.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping("/my-page")
+    public ResponseEntity<AppUserDTO> getMyPage(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("[UserController] getMypage() 호출 - userId: {}", userDetails.getUsername());
+        AppUserDTO userDTO = appUserService.getMyPage(userDetails.getUsername());
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @PutMapping(value = "/my-page/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AppUserDTO> updateUserInfo(
+            @RequestPart("user") AppUserDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal UserDetails userDetails
+            ) {
+        log.info("[UserController] updateUserInfo() - userId: {}", userDetails.getUsername());
+        AppUserDTO userDTO = appUserService.updateUserProfile(userDetails.getUsername(), dto, image);
+        return ResponseEntity.ok(userDTO);
+    }
+
 }
