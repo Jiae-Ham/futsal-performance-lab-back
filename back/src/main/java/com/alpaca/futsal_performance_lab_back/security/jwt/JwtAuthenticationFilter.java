@@ -29,7 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 공개 URL 목록 - 토큰 없이 접근 허용
     private static final List<String> PUBLIC_PATTERNS = List.of(
-            "/api/auth/**"
+            "/api/auth/login",
+            "/api/auth/register"
     );
 
     @Override
