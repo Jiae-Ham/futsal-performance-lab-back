@@ -2,6 +2,7 @@ package com.alpaca.futsal_performance_lab_back.service.lobby;
 
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.GameJoinResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyStatusResponse;
+import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyUserInfoResponse;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.entity.Game;
 import com.alpaca.futsal_performance_lab_back.entity.GameAssign;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -83,7 +85,8 @@ public class LobbyService {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(GameNotFoundException::new);
 
-        if (gameAssignRepository.existsByGame_GameIdAndAppUser_UserId(gameId, userId)) {
+        // 조건문 gameAssignRespository -> !gameAssignRepository로 수정
+        if (!gameAssignRepository.existsByGame_GameIdAndAppUser_UserId(gameId, userId)) {
             throw AccessDeniedToGameException.notParticipant();
         }
 
@@ -103,6 +106,11 @@ public class LobbyService {
         game.setActive(2);
         gameRepository.save(game);
     }
+
+    public List<LobbyUserInfoResponse> getUsersInLobby(int gameId) {
+        return gameAssignRepository.findUserSimpleInfoByGameId(gameId);
+    }
+
 }
 
 

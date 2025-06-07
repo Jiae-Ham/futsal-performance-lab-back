@@ -3,10 +3,13 @@ package com.alpaca.futsal_performance_lab_back.controller;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.GameJoinResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyIsReadyResponse;
 import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyStatusResponse;
+import com.alpaca.futsal_performance_lab_back.dto.response.lobby.LobbyUserInfoResponse;
 import com.alpaca.futsal_performance_lab_back.service.lobby.LobbyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/lobby")
@@ -48,4 +51,14 @@ public class LobbyController {
         lobbyService.markReady(gameId, userId);
         return ResponseEntity.ok(new LobbyIsReadyResponse(true));
     }
+
+    /**
+     * 방 안에 참여 중인 userId와 nickname 반환
+     */
+    @GetMapping("/user/{gameId}")
+    public ResponseEntity<List<LobbyUserInfoResponse>> getUsersInLobby(@PathVariable int gameId) {
+        List<LobbyUserInfoResponse> response = lobbyService.getUsersInLobby(gameId);
+        return ResponseEntity.ok(response);
+    }
+
 }

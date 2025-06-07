@@ -4,7 +4,6 @@ import com.alpaca.futsal_performance_lab_back.dto.request.game.TeamSetupRequestD
 import com.alpaca.futsal_performance_lab_back.service.game.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
