@@ -2,7 +2,6 @@ package com.alpaca.futsal_performance_lab_back.jwt;
 
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.service.TokenBlacklistService;
-import com.alpaca.futsal_performance_lab_back.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,12 +62,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
-                AppUser user = (AppUser) auth.getPrincipal();
-                log.info("인증된 사용자: {}", user.getUserId()); // ✅ 특정 필드만 출력
+
+                // 기존 문제 코드:
+                // AppUser user = (AppUser) auth.getPrincipal(); // ❌ 에러 발생
+
+                // 수정된 안전한 코드:
+                if (auth.getPrincipal() instanceof AppUser) {
+                    AppUser user = (AppUser) auth.getPrincipal();
+                    log.info("인증된 사용자: {}", user.getUserId());
+                } else if (auth.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                    org.springframework.security.core.userdetails.User springUser =
+                            (org.springframework.security.core.userdetails.User) auth.getPrincipal();
+                    log.info("인증된 사용자: {}", springUser.getUsername());
+                }
+
                 if (auth != null) {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                     log.info("[JwtAuthFilter] 인증 객체 설정 완료: {}", auth.getName());
-                } else {
+                }else {
                     log.warn("[JwtAuthFilter] 인증 객체 생성 실패 - null 반환");
                 }
 

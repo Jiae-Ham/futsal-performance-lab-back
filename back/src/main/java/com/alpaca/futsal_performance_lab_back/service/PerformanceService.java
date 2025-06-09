@@ -29,7 +29,7 @@ public class PerformanceService {
      * @param userId 사용자 ID
      * @return 사용자 성능 통계 요약 정보
      */
-    public PerformanceSummaryResponseDto getPerformanceSummary(Long userId) {
+    public PerformanceSummaryResponseDto getPerformanceSummary(String userId) {
         // 사용자 기본 통계 정보 조회
         PlayerStatDto playerStat = performanceRepository.getPlayerStatByUserId(userId);
         

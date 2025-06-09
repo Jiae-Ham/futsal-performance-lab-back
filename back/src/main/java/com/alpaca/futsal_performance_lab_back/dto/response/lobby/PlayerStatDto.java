@@ -20,7 +20,7 @@ public class PlayerStatDto {
     /**
      * 사용자 ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 사용자 이름
@@ -66,4 +66,10 @@ public class PlayerStatDto {
      * 마지막 경기 날짜
      */
     private LocalDateTime lastGameDate;
+    private Long totalDistance;        // 총 뛴 거리 (m)
+    private Integer totalPlayTime;     // 출전 시간 (분)
+    private Integer sprintCount;       // 스프린트 횟수
+    private Double caloriesBurned;     // 소모 칼로리
+    private Integer sprintDistance;    // 스프린트 거리
+    private Integer directionChanges;  // 방향전환 횟수
 }

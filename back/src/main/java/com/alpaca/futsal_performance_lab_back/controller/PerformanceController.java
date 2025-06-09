@@ -31,7 +31,7 @@ public class PerformanceController {
      * @return 사용자 성능 통계 요약 정보
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<PerformanceSummaryResponseDto> getPerformanceSummary(@PathVariable Long userId) {
+    public ResponseEntity<PerformanceSummaryResponseDto> getPerformanceSummary(@PathVariable String userId) {
         PerformanceSummaryResponseDto performanceSummary = performanceService.getPerformanceSummary(userId);
         return ResponseEntity.ok(performanceSummary);
     }
