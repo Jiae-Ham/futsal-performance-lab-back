@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -66,7 +67,12 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 프론트 주소
+            config.setAllowedOrigins(Arrays.asList(
+                    "http://localhost:3000",        // 웹 프론트엔드
+                    "http://10.0.2.2:8080",        // 에뮬레이터에서 호스트로 접근
+                    "http://127.0.0.1:8080",       // 로컬호스트
+                    "http://localhost:8080"        // 로컬호스트
+            ));
             config.setAllowedMethods(Collections.singletonList("*"));
             config.setAllowedHeaders(Collections.singletonList("*"));
             config.setAllowCredentials(true);
