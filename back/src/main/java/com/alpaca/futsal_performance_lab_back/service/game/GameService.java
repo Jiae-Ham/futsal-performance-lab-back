@@ -5,7 +5,6 @@ import com.alpaca.futsal_performance_lab_back.entity.Game;
 import com.alpaca.futsal_performance_lab_back.entity.SetAssign;
 import com.alpaca.futsal_performance_lab_back.exception.game.GameAccessException;
 import com.alpaca.futsal_performance_lab_back.exception.game.GameLineupSerializationException;
-import com.alpaca.futsal_performance_lab_back.exception.lobby.AccessDeniedToGameException;
 import com.alpaca.futsal_performance_lab_back.exception.lobby.GameNotFoundException;
 import com.alpaca.futsal_performance_lab_back.repository.GameAssignRepository;
 import com.alpaca.futsal_performance_lab_back.repository.GameRepository;
@@ -64,24 +63,34 @@ public class GameService {
     }
 
     public void gameStart(int gameId, int setAssignId, String userId) {
-        validateHost.requireHostRole(gameId, userId);  // ✅ 방장 권한 확인
+        try {
+            validateHost.requireHostRole(gameId, userId);  // ✅ 방장 권한 확인
 
-        Game game = gameRepository.findById(gameId)
-                .orElseThrow(GameNotFoundException::new);
+            Game game = gameRepository.findById(gameId)
+                    .orElseThrow(GameNotFoundException::new);
 
-        game.setActive(3);
-        gameRepository.save(game);
+            // isActive를 3으로 설정 (세트 진행 중)
+            game.setActive(3);
+            gameRepository.save(game);
 
-        webClient.post()
-                .uri("/api/game/live/start")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of(
-                        "gameId", gameId,
-                        "setAssignId", setAssignId
-                ))
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+            log.info("게임 시작 - gameId: {}, setAssignId: {}, userId: {}", gameId, setAssignId, userId);
+
+            // 외부 시스템에 게임 시작 알림
+            webClient.post()
+                    .uri("/api/game/live/start")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(Map.of(
+                            "gameId", gameId,
+                            "setAssignId", setAssignId
+                    ))
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+
+        } catch (Exception e) {
+            log.error("게임 시작 실패 - gameId: {}, error: {}", gameId, e.getMessage());
+            throw e;
+        }
     }
 
     public void gameStop(int gameId, int setAssignId, String userId) {
