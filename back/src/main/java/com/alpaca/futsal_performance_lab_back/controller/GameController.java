@@ -4,6 +4,7 @@ import com.alpaca.futsal_performance_lab_back.dto.request.game.TeamSetupRequestD
 import com.alpaca.futsal_performance_lab_back.service.game.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,13 +24,14 @@ public class GameController {
         gameService.saveTeamSetup(gameId, userId, dto);
     }
     @PostMapping("/start/live/{gameId}/{setAssignId}/{userId}")
-    public void gameStart(
+    public ResponseEntity<String> gameStart(
             @PathVariable Integer gameId,
             @PathVariable Integer setAssignId,
             @PathVariable String userId
     ){
         gameService.gameStart(gameId, setAssignId, userId);
-    };
+        return ResponseEntity.ok("게임 시작 완료");
+    }
     @PostMapping("/stop/live/{gameId}/{setAssignId}/{userId}")
     public void gameStop(
             @PathVariable Integer gameId,
