@@ -33,7 +33,7 @@ public class GameService {
     private final ValidateHost validateHost;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final WebClient webClient = WebClient.builder().baseUrl("http://localhost:8082").build();
+    private final WebClient webClient = WebClient.builder().baseUrl("http://100.80.73.116:8082").build();
 
 
     public SaveTeamSetupResponse saveTeamSetup(Integer gameId, String userId, TeamSetupRequestDTO dto) {
