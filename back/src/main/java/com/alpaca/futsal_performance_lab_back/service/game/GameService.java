@@ -1,6 +1,7 @@
 package com.alpaca.futsal_performance_lab_back.service.game;
 
 import com.alpaca.futsal_performance_lab_back.dto.request.game.TeamSetupRequestDTO;
+import com.alpaca.futsal_performance_lab_back.dto.response.game.SaveTeamSetupResponse;
 import com.alpaca.futsal_performance_lab_back.entity.Game;
 import com.alpaca.futsal_performance_lab_back.entity.SetAssign;
 import com.alpaca.futsal_performance_lab_back.exception.game.GameAccessException;
@@ -35,7 +36,7 @@ public class GameService {
     private final WebClient webClient = WebClient.builder().baseUrl("http://localhost:8081").build();
 
 
-    public void saveTeamSetup(Integer gameId, String userId, TeamSetupRequestDTO dto) {
+    public SaveTeamSetupResponse saveTeamSetup(Integer gameId, String userId, TeamSetupRequestDTO dto) {
         validateHost.requireHostRole(gameId, userId);
 
         log.info("팀 세팅 요청 - gameId: {}, userId: {}, timestamp: {}", gameId, userId, dto.getTimestamp());
@@ -59,7 +60,9 @@ public class GameService {
                 .build();
 
         setAssignRepository.save(setAssign);
+
         log.info("라인업 저장 완료: setAssignId={}", setAssign.getSetAssignId());
+        return new SaveTeamSetupResponse(gameId,setAssign.getSetAssignId());
     }
 
     public void gameStart(int gameId, int setAssignId, String userId) {
