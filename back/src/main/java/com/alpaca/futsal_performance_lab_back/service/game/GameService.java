@@ -239,5 +239,14 @@ public class GameService {
         game.setEndedAt(LocalDateTime.now());
         game.setActive(5);
         gameRepository.save(game);
+
+        // Stadium에 연결된 모든 Tag의 assigned = false
+        Stadium stadium = game.getStadium();
+        for (Tag tag : stadium.getTags()) {
+            tag.setAssigned(false);
+        }
+
+        // tagRepository가 존재한다고 가정하고 saveAll 수행
+        tagRepository.saveAll(stadium.getTags());
     }
 }
