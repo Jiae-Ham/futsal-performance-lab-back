@@ -3,6 +3,9 @@ package com.alpaca.futsal_performance_lab_back.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "game_assign")
 @NoArgsConstructor
@@ -27,4 +30,6 @@ public class GameAssign {
 
     @Column(name = "host", nullable = false)
     private boolean host;
+
+
 }

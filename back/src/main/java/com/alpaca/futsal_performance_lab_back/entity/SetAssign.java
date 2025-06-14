@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "set_assign")
@@ -37,5 +39,8 @@ public class SetAssign {
     @ManyToOne
     @JoinColumn(name = "game_id", nullable = false)
     private Game game;
+
+    @OneToMany(mappedBy = "setAssign", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Summary> summaries = new ArrayList<>();
 
 }

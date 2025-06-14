@@ -39,8 +39,12 @@ public class Game {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<SetAssign> setAssigns = new ArrayList<>();
 
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Summary> summaries = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stadium_id",referencedColumnName = "stadium_id" ,nullable = false)
     private Stadium stadium;
+
 
 }
