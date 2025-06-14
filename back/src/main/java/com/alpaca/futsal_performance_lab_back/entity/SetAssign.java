@@ -30,6 +30,7 @@ public class SetAssign {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
+    @Setter
     @Column(name = "lineup", length = 4000)
     private String lineup;
 

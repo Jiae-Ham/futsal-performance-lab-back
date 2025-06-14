@@ -18,3 +18,5 @@ INSERT INTO tag (tag_id, assigned, stadium_id) VALUES ('DDDD1111', false, 1)
 
 INSERT INTO tag (tag_id, assigned, stadium_id) VALUES ('FFFF1111', false, 1)
     ON CONFLICT (tag_id) DO NOTHING;
+
+

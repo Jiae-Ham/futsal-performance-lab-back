@@ -10,10 +10,13 @@ import lombok.*;
 @Builder
 public class Tag {
 
+
     @Id
     @Column(name = "tag_id")
+    @Getter
     private String tagId;
 
+    @Setter
     @Column(name = "assigned")
     private boolean assigned;
 

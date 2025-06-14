@@ -2,11 +2,15 @@ package com.alpaca.futsal_performance_lab_back.controller;
 
 import com.alpaca.futsal_performance_lab_back.dto.request.game.TeamSetupRequestDTO;
 import com.alpaca.futsal_performance_lab_back.dto.response.game.SaveTeamSetupResponse;
+import com.alpaca.futsal_performance_lab_back.dto.response.game.TagAssignResponse;
 import com.alpaca.futsal_performance_lab_back.service.game.GameService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/game")
@@ -24,6 +28,16 @@ public class GameController {
     ) {
         return gameService.saveTeamSetup(gameId, userId, dto);
     }
+
+    @GetMapping("/tag/{gameId}/{setAssginId}/{userId}")
+    public List<TagAssignResponse> tagAssign(
+            @PathVariable Integer gameId,
+            @PathVariable Integer setAssginId,
+            @PathVariable String userId
+    ) throws JsonProcessingException {
+        return gameService.tagAssign(gameId,setAssginId,userId);
+    }
+
     @PostMapping("/start/live/{gameId}/{setAssignId}/{userId}")
     public ResponseEntity<String> gameStart(
             @PathVariable Integer gameId,
