@@ -59,7 +59,7 @@ public class GameController {
     public void gameEnd(
             @PathVariable Integer gameId,
             @PathVariable String userId
-    ){
+    ) throws JsonProcessingException {
         gameService.gameEnd(gameId, userId);
     }
 }

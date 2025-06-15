@@ -230,7 +230,7 @@ public class GameService {
     }
 
 
-    public void gameEnd(int gameId, String userId) {
+    public void gameEnd(int gameId, String userId) throws JsonProcessingException {
         validateHost.requireHostRole(gameId, userId);
 
         Game game = gameRepository.findById(gameId)

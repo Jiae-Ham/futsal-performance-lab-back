@@ -1,11 +1,14 @@
 package com.alpaca.futsal_performance_lab_back.service.game;
 
+import com.alpaca.futsal_performance_lab_back.dto.Internal.LineupWithTags;
 import com.alpaca.futsal_performance_lab_back.entity.AppUser;
 import com.alpaca.futsal_performance_lab_back.entity.SetAssign;
 import com.alpaca.futsal_performance_lab_back.entity.Summary;
+import com.alpaca.futsal_performance_lab_back.repository.AppUserRepository;
 import com.alpaca.futsal_performance_lab_back.repository.SetAssignRepository;
 import com.alpaca.futsal_performance_lab_back.repository.SummaryRepository;
 import com.alpaca.futsal_performance_lab_back.service.utils.ScoreNormalizer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -13,25 +16,36 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GamePostProcessor {
 
-    /** ClickHouse 연결 (네임드 파라미터 지원) */
+    /**
+     * ClickHouse 연결 (네임드 파라미터 지원)
+     */
     private final NamedParameterJdbcTemplate clickHouseJdbc;
     private final ScoreNormalizer norm;
 
-    /** Postgres용 JPA 리포지터리 */
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * Postgres용 JPA 리포지터리
+     */
     private final SummaryRepository summaryRepository;
     private final SetAssignRepository setAssignRepository;
+    private final AppUserRepository appUserRepository;
 
     private static final String SUMMARY_SQL = """
-WITH
+
+            WITH
 /* ① 프레임별 거리·속도 계산 ----------------------------------*/
 frames AS (
     SELECT
@@ -45,13 +59,12 @@ frames AS (
     FROM (
         SELECT
             tagId, time, x, y,
-            lagInFrame(x)    OVER w AS lagX,
-            lagInFrame(y)    OVER w AS lagY,
-            lagInFrame(time) OVER w AS lagTime
+            any(x) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS lagX,
+            any(y) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS lagY,
+            any(time) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS lagTime
         FROM measurements
         WHERE gameCode = :gameCode          -- ★ 파라미터
           AND setCode  = :setCode           -- ★ 파라미터
-        WINDOW w AS (PARTITION BY tagId ORDER BY time)
     )
     WHERE lagX IS NOT NULL
       AND dist_m < 3.72
@@ -76,7 +89,7 @@ base AS (
 /* ③ 스프린트 -----------------------------------------------*/
 spr_sessions AS (
     SELECT *, spd_mps >= 5.56 AS is_fast,
-           lagInFrame(spd_mps) OVER (PARTITION BY tag_id ORDER BY time) AS prev_speed,
+           any(spd_mps) OVER (PARTITION BY tag_id ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS prev_speed,
            toUInt8(is_fast AND (prev_speed < 5.56 OR prev_speed IS NULL)) AS is_start
     FROM frames
 ),
@@ -104,14 +117,13 @@ sprints AS (
 cod_raw AS (
     SELECT
         tagId AS tag_id, x, y,
-        lagInFrame(x, 1) OVER w AS lagX1,
-        lagInFrame(y, 1) OVER w AS lagY1,
-        lagInFrame(x, 5) OVER w AS lagX5,
-        lagInFrame(y, 5) OVER w AS lagY5
+        any(x) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS lagX1,
+        any(y) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS lagY1,
+        any(x) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 5 PRECEDING AND 5 PRECEDING) AS lagX5,
+        any(y) OVER (PARTITION BY tagId ORDER BY time ROWS BETWEEN 5 PRECEDING AND 5 PRECEDING) AS lagY5
     FROM measurements
     WHERE gameCode = :gameCode
       AND setCode  = :setCode
-    WINDOW w AS (PARTITION BY tagId ORDER BY time)
 ),
 cods AS (
     SELECT tag_id,
@@ -125,15 +137,19 @@ cods AS (
            ) AS cod_count
     FROM cod_raw
     GROUP BY tag_id
-)
+),
 
-/* ⑤ Coverage(수비) -----------------------------------------*/
+/* ⑤ Coverage(수비) -----------------------------------------*/
 coverage AS (
-    /* 25 cm × 25 cm 격자(100단위) 셀을 얼마나 밟았는가 */
+    /* 4000cm × 2000cm 필드 기준으로 격자 커버리지 계산 */
     SELECT
         tagId AS tag_id,
-        least( count(DISTINCT intDiv(x,100), intDiv(y,100)) * 2 , 100 ) AS coverage_score
-        -- 1 셀 = 2점, 최대 100점
+        least(
+            count(DISTINCT (intDiv(x,100) * 10000 + intDiv(y,100))) * 100.0 / (40 * 20), 
+            100
+        ) AS coverage_score
+        -- 필드 크기: 4000cm × 2000cm = 40개 × 20개 격자 = 800개 셀
+        -- 전체 커버시 100점이 되도록 정규화
     FROM measurements
     WHERE gameCode = :gameCode
       AND setCode  = :setCode
@@ -142,23 +158,33 @@ coverage AS (
 
 /* ⑥ 최종 결과 ---------------------------------------------*/
 SELECT
-    b.tag_id,
-    /* ─ 원본 지표 ─ */          … 생략 …
-    coalesce(c.cod_count ,0)          AS cod_count,
+    b.tag_id                    AS tag_id,
+    b.game_code                 AS game_code,
+    b.set_code                  AS set_code,
+    b.play_time_minutes         AS play_time_minutes,
+    b.total_distance_km         AS total_distance_km,
+    b.max_speed_kmph            AS max_speed_kmph,
+    b.avg_speed_kmph            AS avg_speed_kmph,
+    b.calories_burned_kcal      AS calories_burned_kcal,
+    coalesce(s.sprint_count,0)  AS sprint_count,
+    coalesce(s.sprint_dist_m,0) AS sprint_dist_m,
+    coalesce(c.cod_count,0)     AS cod_count,
 
     /* ─ 점수 매핑 ─ */
-    b.avg_speed_kmph                  AS attack_score,
-    b.max_speed_kmph                  AS speed_score,
-    coalesce(s.sprint_count,0)        AS aggression_score,
-    coalesce(c.cod_count   ,0)        AS agility_score,
-    b.total_distance_km               AS stamina_score,
-    coalesce(cv.coverage_score,0)     AS defense_score        -- ★ NEW
-FROM   base      AS b
-LEFT JOIN sprints   AS s  USING (tag_id)
-LEFT JOIN cods      AS c  USING (tag_id)
-LEFT JOIN coverage  AS cv USING (tag_id)          -- ★ NEW
+    b.avg_speed_kmph            AS attack_score,
+    b.max_speed_kmph            AS speed_score,
+    coalesce(s.sprint_count,0)  AS aggression_score,
+    coalesce(c.cod_count,0)     AS agility_score,
+    b.total_distance_km         AS stamina_score,
+    coalesce(cv.coverage_score,0) AS defense_score
+FROM base AS b
+LEFT JOIN sprints  AS s  ON b.tag_id = s.tag_id
+LEFT JOIN cods     AS c  ON b.tag_id = c.tag_id
+LEFT JOIN coverage AS cv ON b.tag_id = cv.tag_id
 ORDER BY b.tag_id;
+
 """;
+
 
 
     /**
@@ -166,8 +192,7 @@ ORDER BY b.tag_id;
      */
     @Async
     @Transactional
-    public void processAfterGameEnd(int gameId) {
-
+    public void processAfterGameEnd(int gameId) throws JsonProcessingException {
         log.info("[Async] 게임 {} 종료 후 ClickHouse 집계 시작", gameId);
 
         // 1) 세트 조회
@@ -180,65 +205,83 @@ ORDER BY b.tag_id;
         List<Summary> batch = new ArrayList<>();
 
         for (SetAssign set : sets) {
+            // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+            // 2) 이 세트에 할당된 tagId ↔ userId 매핑 준비
+            //    LineupWithTags: JSON 구조에 tagId, userId 함께 담겨 있다고 가정
+            LineupWithTags lwt = objectMapper.readValue(
+                    set.getLineup(), LineupWithTags.class);
 
+            Map<String, String> tagToUser = new HashMap<>();
+            // red team
+            lwt.getRedTeam().forEach((position, pi) ->
+                    tagToUser.put(pi.getTagId(), pi.getUserId()));
+            // blue team
+            lwt.getBlueTeam().forEach((position, pi) ->
+                    tagToUser.put(pi.getTagId(), pi.getUserId()));
+
+            // 3) ClickHouse 쿼리 실행
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("gameCode", gameId)
                     .addValue("setCode",  set.getSetAssignId());
 
             clickHouseJdbc.query(SUMMARY_SQL, params, (rs, rowNum) -> {
+                // 4) 결과에서 tag_id 추출 → 세트별 매핑으로 userId 획득
+                String tagId  = rs.getString("tag_id");
+                String userId = tagToUser.get(tagId);
+                if (userId == null) {
+                    return null;
+                }
 
-                // FK 프록시
-                AppUser userProxy = AppUser.builder()
-                        .userId(rs.getString("tag_id"))
-                        .build();
+                // 5) AppUser 로드
+                AppUser realUser = appUserRepository.findById(userId)
+                        .orElseThrow(() ->
+                                new RuntimeException("사용자를 찾을 수 없음: " + userId));
 
-                /* ─── 1. 원본 지표 읽기 ─── */
-                double attackRaw  = rs.getDouble("attack_score");      // avg_speed  km/h
-                double speedRaw   = rs.getDouble("speed_score");       // max_speed  km/h
-                double aggrRaw    = rs.getDouble("aggression_score");  // sprint 횟수
-                double agiliRaw   = rs.getDouble("agility_score");     // COD  횟수
-                double defenseRaw = rs.getDouble("defense_score");     // coverage 0~100
-                double stamRaw    = rs.getDouble("stamina_score");     // distance km
+                // 6) 원본 지표 읽기
+                double attackRaw  = rs.getDouble("attack_score");
+                double speedRaw   = rs.getDouble("speed_score");
+                double aggrRaw    = rs.getDouble("aggression_score");
+                double agiliRaw   = rs.getDouble("agility_score");
+                double defenseRaw = rs.getDouble("defense_score");
+                double stamRaw    = rs.getDouble("stamina_score");
 
-                /* ─── 2. 0~100 정규화 (min/max는 예시) ─── */
-                double attackN  = norm.toTenScale(attackRaw, 0, 8);    // 20 km/h →
-                double speedN   = norm.toTenScale(speedRaw, 0, 40);    // 40 km/h →
-                double aggrN    = norm.toTenScale(aggrRaw, 0, 15);    // 30회 →
-                double agiliN   = norm.toTenScale(agiliRaw, 0, 120);   // 120회 →
-                double defenseN = defenseRaw;                      // 이미 0~100
-                double stamN    = norm.toTenScale(stamRaw, 0, 10);     // 10 km →
+                // 7) 정규화
+                double attackN  = norm.toTenScale(attackRaw, 0, 8);
+                double speedN   = norm.toTenScale(speedRaw, 0, 40);
+                double aggrN    = norm.toTenScale(aggrRaw, 0, 15);
+                double agiliN   = norm.toTenScale(agiliRaw, 0, 120);
+                double defenseN = defenseRaw;
+                double stamN    = norm.toTenScale(stamRaw, 0, 10);
 
-                /* ─── 3. 600점 만점 gameScore ─── */
                 int gameScore = (int) Math.round(
                         attackN + speedN + aggrN + agiliN + defenseN + stamN);
 
-                /* ─── 4. Summary 엔티티 ─── */
+                // 8) Summary 엔티티 생성
                 Summary summary = Summary.builder()
                         .playTimeMinutes   (rs.getDouble("play_time_minutes"))
                         .sprintCount       (rs.getInt   ("sprint_count"))
                         .caloriesBurnedKcal(rs.getDouble("calories_burned_kcal"))
 
-                        .gameScore      (gameScore)
-                        .attackScore    (attackN)
-                        .speedScore     (speedN)
-                        .aggressionScore(aggrN)
-                        .agilityScore   (agiliN)
-                        .defenseScore   (defenseN)
-                        .staminaScore   (stamN)
+                        .gameScore        (gameScore)
+                        .attackScore      (attackN)
+                        .speedScore       (speedN)
+                        .aggressionScore  (aggrN)
+                        .agilityScore     (agiliN)
+                        .defenseScore     (defenseN)
+                        .staminaScore     (stamN)
 
-                        .appUser  (userProxy)
-                        .game     (set.getGame())
-                        .setAssign(set)
+                        .appUser    (realUser)
+                        .game       (set.getGame())
+                        .setAssign  (set)
                         .build();
 
                 batch.add(summary);
-                return null; // RowMapper
+                return null;
             });
         }
 
-        // 5) 저장
+        // 9) 일괄 저장
         summaryRepository.saveAll(batch);
-
         log.info("[Async] 게임 {}: 세트 {}개, Summary {}건 저장 완료",
                 gameId, sets.size(), batch.size());
     }
