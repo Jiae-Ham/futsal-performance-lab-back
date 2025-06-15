@@ -38,10 +38,10 @@ import java.util.Map;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final GameAssignRepository gameAssignRepository;
     private final TagRepository tagRepository;
     private final SetAssignRepository setAssignRepository;
     private final ValidateHost validateHost;
+    private final GamePostProcessor gamePostProcessor;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient = WebClient.builder().baseUrl("http://100.80.73.116:8082").build();
@@ -240,13 +240,14 @@ public class GameService {
         game.setActive(5);
         gameRepository.save(game);
 
-        // Stadium에 연결된 모든 Tag의 assigned = false
         Stadium stadium = game.getStadium();
         for (Tag tag : stadium.getTags()) {
             tag.setAssigned(false);
         }
-
-        // tagRepository가 존재한다고 가정하고 saveAll 수행
         tagRepository.saveAll(stadium.getTags());
+
+        //ClickHouse 쿼리 백그라운드 처리
+        gamePostProcessor.processAfterGameEnd(gameId);
     }
+
 }
