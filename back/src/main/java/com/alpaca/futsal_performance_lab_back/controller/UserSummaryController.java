@@ -1,6 +1,8 @@
 package com.alpaca.futsal_performance_lab_back.controller;
 
+import com.alpaca.futsal_performance_lab_back.dto.response.summary.UserSummaryNormalizedResponseDTO;
 import com.alpaca.futsal_performance_lab_back.dto.response.summary.UserSummaryResponseDTO;
+import com.alpaca.futsal_performance_lab_back.service.summary.UserStatsNormalizedService;
 import com.alpaca.futsal_performance_lab_back.service.summary.UserStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserSummaryController {
     private final UserStatsService userStatsService;
+    private final UserStatsNormalizedService userStatsNormalizedService;
 
     /**
      * 현재 로그인된 사용자의 최근 7세트 평균 능력치 점수 조회
@@ -28,5 +31,17 @@ public class UserSummaryController {
         return ResponseEntity.ok(stats);
     }
 
+    /**
+     * 현재 로그인된 사용자의 최근 7세트 평균 정규화 능력치 점수 조회
+     * @param userDetails 로그인된 사용자 정보
+     * @return 6개 능력치 평균 점수
+     */
+    @GetMapping("/me/stats/recent/normalized")
+    public ResponseEntity<UserSummaryNormalizedResponseDTO> getRecentStatsNormalized(
+            @AuthenticationPrincipal UserDetails userDetails) {
 
+        String userId = userDetails.getUsername();
+        UserSummaryNormalizedResponseDTO stats = userStatsNormalizedService.getRecentSevenSetsStats(userId);
+        return ResponseEntity.ok(stats);
+    }
 }

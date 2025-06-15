@@ -6,32 +6,41 @@ import com.alpaca.futsal_performance_lab_back.repository.SummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SummaryService {
 
-    private final SummaryRepository summaryRepository;
+    private final SummaryRepository summaryRepo;
 
-    public Optional<SummaryResponse> getSummary(Integer gameId, String userId) {
-        return summaryRepository
-                .findByGame_GameIdAndAppUser_UserId(gameId, userId)
-                .map(this::toDto);
+    /**
+     *  게임-ID, 유저-ID 로 세트별 Summary 목록 반환
+     */
+    public List<SummaryResponse> getSummaries(Integer gameId, String userId) {
+
+        return summaryRepo
+                .findByGame_GameIdAndAppUser_UserIdOrderBySetAssign_CreatedAtAsc(gameId, userId)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    private SummaryResponse toDto(Summary summary) {
+    private SummaryResponse toDto(Summary s) {
         return new SummaryResponse(
-                summary.getAggressionScore(),
-                summary.getAgilityScore(),
-                summary.getAttackScore(),
-                summary.getCaloriesBurnedKcal(),
-                summary.getDefenseScore(),
-                summary.getGameScore(),
-                summary.getPlayTimeMinutes(),
-                summary.getSpeedScore(),
-                summary.getSprintCount(),
-                summary.getStaminaScore()
+                s.getSetAssign().getSetAssignId(),
+                s.getAggressionScore(),
+                s.getAgilityScore(),
+                s.getAttackScore(),
+                s.getCaloriesBurnedKcal(),
+                s.getDefenseScore(),
+                s.getGameScore(),
+                s.getPlayTimeMinutes(),
+                s.getSpeedScore(),
+                s.getSprintCount(),
+                s.getStaminaScore()
+
         );
     }
 }
+
