@@ -25,7 +25,7 @@
 | **ORM** | Spring Data JPA (Hibernate) |
 | **Security** | Spring Security |
 | **Build Tool** | Gradle |
-| **Infrastructure** | AWS EC2 (Ubuntu), Docker |
+| **Infrastructure** | Azure, Docker |
 | **Utilities** | Project Lombok, JUnit 5 |
 
 ---
