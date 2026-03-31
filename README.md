@@ -30,9 +30,7 @@
 
 ---
 
-## 🏗 System Architecture & Data Model
-
-DeepWiki의 설계를 바탕으로 **N-tier 아키텍처**를 채택하여 각 계층의 역할을 엄격히 분리했습니다.
+## 🏗 System Architecture
 
 1.  **Stadium**: 경기장 규격 및 상태 정보 관리
 2.  **Game & Set**: 전체 경기 세션과 개별 세트 단위의 데이터 관계 정립
