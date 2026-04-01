@@ -62,6 +62,10 @@ src/main/resources/application.yml 파일에서 PostgreSQL 접속 정보를 설�
     
     Docker 사용 시:
     docker-compose up -d
+---
+## UI
+<img width="735" height="557" alt="image" src="https://github.com/user-attachments/assets/eb9452f5-3a43-46de-b6e1-f691c7050d20" />
+
 
 ---
 ## 📂 Project Structure
@@ -83,3 +87,5 @@ src/main/resources/application.yml 파일에서 PostgreSQL 접속 정보를 설�
   ├── build.gradle                  # Gradle Project Configuration
   ├── settings.gradle               # Project Settings
   └── README.md
+
+
